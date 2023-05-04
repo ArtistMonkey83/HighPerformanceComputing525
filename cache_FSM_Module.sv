@@ -20,6 +20,12 @@ module dm_cache_fsm(input bit clk,                  // Write clock
       cache_tag_type tag_read;    // Tag read result, has 1-bit valid & dirty, tag from bits 31-14
       cache_tag_type tag_write;   // Tag write data, has 1-bit valid & dirty, tag from bits 31-14
       cache_req_type tag_req;     // Data request, has 10-bit index, 1-bit W/E
+      
+    // Interface signals to cache data memory
+      cache_data_type data_read;    // Data read result, has 1-bit valid & dirty, tag from bits 31-14
+      cache_data_type data_write;   // Data write data, has 1-bit valid & dirty, tag from bits 31-14
+      cache_req_type data_req;     // Data request, has 10-bit index, 1-bit W/E
+      
 
       // Temporary variable for cache controller result
       cpu_result_type v_cpu_res;  // Has 32-bit data and 1-bit ready
