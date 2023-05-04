@@ -2,17 +2,17 @@
 
 module dm_cache_fsm_tb;
     // Inputs
-    reg clk;
-    reg rst;
-    reg cpu_req_valid;
-    reg cpu_req_rw;
-    reg [31:0] cpu_req_data;
-    reg [31:0] cpu_req_addr;
+    logic clk;
+    logic rst;
+    logic cpu_req_valid;
+    logic cpu_req_rw;
+    logic [31:0] cpu_req_data;
+    logic [31:0] cpu_req_addr;
 
     // Outputs
     wire mem_req_rw;
     wire [31:0] mem_req_addr;
-    wire [127:0] mem_req_data;
+    wire [256:0] mem_req_data;
     wire mem_req_valid;
     wire [31:0] cpu_res_data;
     wire cpu_res_ready;
