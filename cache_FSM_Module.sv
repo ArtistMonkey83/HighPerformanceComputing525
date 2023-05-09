@@ -2,8 +2,8 @@
 module dm_cache_fsm(input bit clk,                  // Write clock
                     input bit rst,                  // Reset
                     input cpu_req_type cpu_req,     // CPU request input (CPU -> Cache) has 32-bits addr & data, 1-bit rw & valid
-                    input mem_data_type mem_data,   // Memory response (Memory -> Cache) has 128-bits data, 1-bit ready
-                    output mem_req_type mem_req,    // Memory request (Cache -> Memory) has 32-bits addr, 128-bits data, 1-bit rw & valid
+                    input mem_data_type mem_data,   // Memory response (Memory -> Cache) has 256-bits data, 1-bit ready
+                    output mem_req_type mem_req,    // Memory request (Cache -> Memory) has 32-bits addr, 256-bits data, 1-bit rw & valid
                     output cpu_result_type cpu_res  // Cache result (Cache -> CPU) has 32-bits data, 1-bit ready
 );
       timeunit 1ns;
@@ -20,18 +20,12 @@ module dm_cache_fsm(input bit clk,                  // Write clock
       cache_tag_type tag_read;    // Tag read result, has 1-bit valid & dirty, tag from bits 31-14
       cache_tag_type tag_write;   // Tag write data, has 1-bit valid & dirty, tag from bits 31-14
       cache_req_type tag_req;     // Data request, has 10-bit index, 1-bit W/E
-      
-    // Interface signals to cache data memory
-      cache_data_type data_read;    // Data read result, has 1-bit valid & dirty, tag from bits 31-14
-      cache_data_type data_write;   // Data write data, has 1-bit valid & dirty, tag from bits 31-14
-      cache_req_type data_req;     // Data request, has 10-bit index, 1-bit W/E
-      
 
       // Temporary variable for cache controller result
       cpu_result_type v_cpu_res;  // Has 32-bit data and 1-bit ready
 
       // Temporary variable for memory controller request
-      mem_req_type v_mem_req;     // Has 32-bits addr, 128-bits data, 1-bit rw & valid
+      mem_req_type v_mem_req;     // Has 32-bits addr, 256-bits data, 1-bit rw & valid
 
       assign mem_req = v_mem_req; // Connect to output ports
       assign cpu_res = v_cpu_res; // Connect to output ports
@@ -67,7 +61,7 @@ module dm_cache_fsm(input bit clk,                  // Write clock
       endcase
 
       v_mem_req.addr =  cpu_req.addr;   // Memory request address sampled from CPU Request, 32-bits
-      v_mem_req.data = data_read;       // Memory request data used in write, 128-bits
+      v_mem_req.data = data_read;       // Memory request data used in write, 256-bits
       v_mem_req.rw = '0;
 
 // Cache FSM Slide 74
@@ -116,7 +110,7 @@ module dm_cache_fsm(input bit clk,                  // Write clock
           allcate: begin
             if (mem_data.ready) begin     // Memory controller has responded
               vstate = compare_tag;       // Re-compare tag for write miss, need to modify correct word, next State
-              data_write = mem_data.data; //data is 128-bits, mem_req_type struct
+              data_write = mem_data.data; //data is 256-bits, mem_req_type struct
               data_req.we = '1;           // Update cache line data
             end
           end
@@ -143,5 +137,5 @@ module dm_cache_fsm(input bit clk,                  // Write clock
     // Connect Cache tag and data memory
     dm_cache_tag ctag(.*);
     dm_cache_data cdata (.*);
-    
+
 endmodule

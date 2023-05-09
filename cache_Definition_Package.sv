@@ -17,8 +17,8 @@ typedef struct {
   bit we;                 // Write/Enable bit
 }cache_req_type;
 
-// 128-bit cach line data
-typedef bit [127:0]cache_data_type;
+// 256-bit cach line data
+typedef bit [255:0]cache_data_type;
 
 // Data structures for CPU <-> Cache Controller interface Slide 67
 
@@ -41,14 +41,14 @@ typedef struct {
 // Memory request (Cache Controller -> Memory)
 typedef struct{
     bit[31:0]addr;     // Request byte address
-    bit[127:0]data;    // 128-bit request data, used for writing
+    bit[255:0]data;    // 256-bit request data, used for writing
     bit rw;            // Request type 0 == Read, 1 == Write
     bit valid;         // Request is valid
 }mem_req_type;
 
 // Memory Controller response (Memory -> Cache Controller)
 typedef struct{
-    cache_data_type data;   // 128-bit read back data
+    cache_data_type data;   // 256-bit read back data
     bit ready;              // The data is ready
 }mem_data_type;
 

@@ -1,90 +1,86 @@
 `timescale 1ns / 1ps
 
-module dm_cache_fsm_tb;
+module dm_cache_fsm_tb();
     // Inputs
     logic clk;
     logic rst;
-    logic cpu_req_valid;
-    logic cpu_req_rw;
-    logic [31:0] cpu_req_data;
-    logic [31:0] cpu_req_addr;
+    logic [255:0] data;
+    logic ready;
+    cpu_req_type cpu_req;
+    mem_req_type mem_req;
 
     // Outputs
-    wire mem_req_rw;
-    wire [31:0] mem_req_addr;
-    wire [256:0] mem_req_data;
-    wire mem_req_valid;
-    wire [31:0] cpu_res_data;
-    wire cpu_res_ready;
+    mem_data_type mem_data;
+    cpu_result_type cpu_res;
 
-    dm_cache_fsm uut (
+    dm_cache_fsm dut (
         .clk(clk),
         .rst(rst),
-        .cpu_req({cpu_req_data, cpu_req_addr, cpu_req_rw, cpu_req_valid}),
-        .mem_req({mem_req_data, mem_req_addr, mem_req_rw, mem_req_valid}),
-        .cpu_res({cpu_res_data, cpu_res_ready})
+        .cpu_req(cpu_req),
+        .mem_data(mem_data),
+        .cpu_res(cpu_res)
     );
 
     initial begin
         clk = 0;
-        forever #5 clk = ~clk;
+        forever ##5 clk = ~clk;
     end
 
     initial begin
         // Initialize inputs
         rst = 1;
-        cpu_req_valid = 0;
-        cpu_req_rw = 0;
-        cpu_req_data = 0;
-        cpu_req_addr = 0;
+        cpu_req.valid = 0;
+        cpu_req.rw = 0;
+        cpu_req.data = 0;
+        cpu_req.addr = 0;
 
         // Wait for some time to let the reset settle
-        #10 rst = 0;
+        ##10 rst = 0;
 
         // Test case 1: Read hit
-        cpu_req_valid = 1;
-        cpu_req_rw = 0;
-        cpu_req_data = 0;
-        cpu_req_addr = 32'h80004000;
-        #10;
-        cpu_req_valid = 0;
-        #100;
+        cpu_req.valid = 1;
+        cpu_req.rw = 0;
+        cpu_req.data = 0;
+        cpu_req.addr = 32'h80004000;
+        ##10;
+        cpu_req.valid = 0;
+        ##100;
 
         // Test case 2: Write hit
-        cpu_req_valid = 1;
-        cpu_req_rw = 1;
-        cpu_req_data = 32'h01234567;
-        cpu_req_addr = 32'h80004004;
-        #10;
-        cpu_req_valid = 0;
-        #100;
+        cpu_req.valid = 1;
+        cpu_req.rw = 1;
+        cpu_req.data = 32'h01234567;
+        cpu_req.addr = 32'h80004004;
+        ##10;
+        cpu_req.valid = 0;
+        ##100;
 
         // Test case 3: Read miss
-        cpu_req_valid = 1;
-        cpu_req_rw = 0;
-        cpu_req_data = 0;
-        cpu_req_addr = 32'h80004010;
-        #10;
-        cpu_req_valid = 0;
-        #100;
+        cpu_req.valid = 1;
+        cpu_req.rw = 0;
+        cpu_req.data = 0;
+        cpu_req.addr = 32'h80004010;
+        ##10;
+        cpu_req.valid = 0;
+        ##100;
 
         // Test case 4: Write miss
-        cpu_req_valid = 1;
-        cpu_req_rw = 1;
-        cpu_req_data = 32'h89ABCDEF;
-        cpu_req_addr = 32'h80004008;
-        #10;
-        cpu_req_valid = 0;
-        #100;
+        cpu_req.valid = 1;
+        cpu_req.rw = 1;
+        cpu_req.data = 32'h89ABCDEF;
+        cpu_req.addr = 32'h80004008;
+        ##10;
+        cpu_req.valid = 0;
+        ##100;
 
         // Test case 5: Write-back
-        cpu_req_valid = 1;
-        cpu_req_rw = 0;
-        cpu_req_data = 0;
-        cpu_req_addr = 32'h80004000;
-        #10;
-        cpu_req_valid = 0;
-        #100;
+        cpu_req.valid = 1;
+        cpu_req.rw = 0;
+        cpu_req.data = 0;
+        cpu_req.addr = 32'h80004000;
+        ##10;
+        cpu_req.valid = 0;
+        ##100;
     end
 
 endmodule

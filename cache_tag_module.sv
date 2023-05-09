@@ -7,7 +7,7 @@ module dm_cache_tag(input bit clk,                   // Write clock
       timeunit 1ns;
       timeprescision 1ps;
 
-      cache_data_type tag_mem[0:1023];   // cache_data_type is a 128-bit line
+      cache_data_type tag_mem[0:1023];   // cache_data_type is a 256-bit line
 
       initial begin
         for (int i = 0; i < 1024; i++)
