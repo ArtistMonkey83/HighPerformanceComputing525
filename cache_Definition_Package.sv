@@ -3,6 +3,7 @@ package cache_def;
 
 parameter int TAGMSB = 31; // Tag most significant bit
 parameter int TAGLSB = 14; // Tag least significant bit
+parameter MEM_DELAY = 100;
 
 // Data structure for cache tag
 typedef struct packed {
@@ -17,7 +18,7 @@ typedef struct {
   bit we;                 // Write/Enable bit
 }cache_req_type;
 
-// 256-bit cach line data
+// 256-bit cache line data
 typedef bit [255:0]cache_data_type;
 
 // Data structures for CPU <-> Cache Controller interface Slide 67

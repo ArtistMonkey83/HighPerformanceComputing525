@@ -1,3 +1,5 @@
+
+import cache_def::*;
 // Cache Finite State Machine, Slide 72
 module dm_cache_fsm(input bit clk,                  // Write clock
                     input bit rst,                  // Reset
@@ -7,7 +9,7 @@ module dm_cache_fsm(input bit clk,                  // Write clock
                     output cpu_result_type cpu_res  // Cache result (Cache -> CPU) has 32-bits data, 1-bit ready
 );
       timeunit 1ns;
-      timeprescision 1ps;
+      timeprecision 1ps;
 
       // Write clock
       typedef enum{ idle, compare_tag, allocate, write_back} cache_state_type;
@@ -20,6 +22,11 @@ module dm_cache_fsm(input bit clk,                  // Write clock
       cache_tag_type tag_read;    // Tag read result, has 1-bit valid & dirty, tag from bits 31-14
       cache_tag_type tag_write;   // Tag write data, has 1-bit valid & dirty, tag from bits 31-14
       cache_req_type tag_req;     // Data request, has 10-bit index, 1-bit W/E
+      
+      /*interface signals to cache data memory*/
+      cache_data_type data_read;            //cache line read data
+      cache_data_type data_write;           //cache line write data
+      cache_req_type data_req;              //data req
 
       // Temporary variable for cache controller result
       cpu_result_type v_cpu_res;  // Has 32-bit data and 1-bit ready
@@ -38,26 +45,33 @@ module dm_cache_fsm(input bit clk,                  // Write clock
       tag_write = '{0,0,0};
 
       tag_req.we = '0;                    // Read tag by Default, 1-bit
-      tag_req.index = cpu_req.addr[13:4]; // Direct map index for tag 10-bits
+      tag_req.index = cpu_req.addr[13:5]; // Direct map index for tag 9-bits
 
       data_req.we = '0;                   // Read current cache line by Default
-      data_req.index = cpu_req.addr[13:4] // Direct map index for cache data
+      data_req.index = cpu_req.addr[13:5]; // Direct map index for cache data
 
-      // Modify correct word based on address, 32-bits
       data_write = data_read;
-      case(cpu_req.addr[3:21])    // [3:21] is the block offset
-          2'b00: data_write[31:0] = cpu_req.data;    // First word
-          2'b01: data_write[63:32] = cpu_req.data;   // Second word
-          2'b10: data_write[95:64] = cpu_req.data;   // Third word
-          2'b11: data_write[127:96] = cpu_req.data;  // Fourth word
+      case(cpu_req.addr[4:2])    // [4:2] is the block offset
+          3'b000: data_write[31:0] = cpu_req.data;      // First word
+          3'b001: data_write[63:32] = cpu_req.data;     // Second word
+          3'b010: data_write[95:64] = cpu_req.data;     // Third word
+          3'b011: data_write[127:96] = cpu_req.data;    // Fourth word
+          3'b100: data_write[159:128] = cpu_req.data;   // Fifth word
+          3'b101: data_write[191:160] = cpu_req.data;   // Sixth word
+          3'b110: data_write[223:192] = cpu_req.data;   // Seventh word
+          3'b111: data_write[255:224] = cpu_req.data;   // Eighth word
       endcase
 
       // Read out correct word from Cache -> CPU, 32-bits
-      case(cpu_req.addr[3:21])    // [3:21] is the block offset
-          2'b00: v_cpu_res.data = data_read[31:0];    // First word
-          2'b01: v_cpu_res.data = data_read[63:32];   // Second word
-          2'b10: v_cpu_res.data = data_read[95:64];   // Third word
-          2'b11: v_cpu_res.data = data_read[127:96];  // Fourth word
+      case(cpu_req.addr[4:2])    // [4:2] is the block offset
+          3'b000: v_cpu_res.data = data_read[31:0];     // First word
+          3'b001: v_cpu_res.data = data_read[63:32];    // Second word
+          3'b010: v_cpu_res.data = data_read[95:64];    // Third word
+          3'b011: v_cpu_res.data = data_read[127:96];   // Fourth word
+          3'b100: v_cpu_res.data = data_read[159:128];  // Fifth word
+          3'b101: v_cpu_res.data = data_read[191:160];  // Sixth word
+          3'b110: v_cpu_res.data = data_read[223:192];  // Seventh word
+          3'b111: v_cpu_res.data = data_read[255:224];  // Eighth word
       endcase
 
       v_mem_req.addr =  cpu_req.addr;   // Memory request address sampled from CPU Request, 32-bits
@@ -107,7 +121,7 @@ module dm_cache_fsm(input bit clk,                  // Write clock
           end
 
       // Allocate state, waiting for allocating a new cache line
-          allcate: begin
+          allocate: begin
             if (mem_data.ready) begin     // Memory controller has responded
               vstate = compare_tag;       // Re-compare tag for write miss, need to modify correct word, next State
               data_write = mem_data.data; //data is 256-bits, mem_req_type struct
@@ -137,5 +151,5 @@ module dm_cache_fsm(input bit clk,                  // Write clock
     // Connect Cache tag and data memory
     dm_cache_tag ctag(.*);
     dm_cache_data cdata (.*);
-
+    
 endmodule
